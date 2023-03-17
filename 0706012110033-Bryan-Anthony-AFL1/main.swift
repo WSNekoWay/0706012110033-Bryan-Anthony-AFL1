@@ -44,6 +44,9 @@ func startGame(start: inout Bool, username: inout String, predicate: NSPredicate
         let choice = readLine()!
         if choice == "" {
             start = true
+        }else{
+            print("Invalid input please press [return] to continue")
+            print("")
         }
     }
     //User second interface
@@ -54,6 +57,7 @@ func startGame(start: inout Bool, username: inout String, predicate: NSPredicate
             print("Nice name you have there, adventurer \(username)")
         } else {
             print("I didn't catch that!")
+            print("Error, Can not accept numerical or symbolic input!")
             username = ""
         }
     }
@@ -61,7 +65,7 @@ func startGame(start: inout Bool, username: inout String, predicate: NSPredicate
     print("Let the adventure begin, \(username)!")
 }
 
-//checkStats
+//function for user to check their stats
 func checkStats(username: String, health: Int, maxhealth: Int, mana: Int, maxmana: Int, consumable: [[Any]], choice: String) -> String {
     print("""
         Player name: \(username)
@@ -87,7 +91,7 @@ func checkStats(username: String, health: Int, maxhealth: Int, mana: Int, maxman
     }
 }
 
-//useMidGradePotion
+//function for use to heal him/herself using potion he/she choose
 func usePotion(potion: [Any], health: Int, maxHealth: Int, consumable: inout [[Any]]) -> Int {
     var newHealth = health
     
@@ -128,7 +132,7 @@ func usePotion(potion: [Any], health: Int, maxHealth: Int, consumable: inout [[A
     return newHealth
 }
 
-//Use Elixir
+//function for user to use elixir to recover mana with elixir that user choose
 func useElixir(elixir: [Any], mana: Int, maxMana: Int, consumable: inout [[Any]]) -> Int {
     var newMana = mana
     
@@ -171,10 +175,8 @@ func useElixir(elixir: [Any], mana: Int, maxMana: Int, consumable: inout [[Any]]
 
 
 
-//battle
+//function for user to battle with monster based on the ecosystem they choose
 func battleSequence(choice: String, maxhealth: inout Int, health: inout Int, mana: inout Int, maxmana: inout Int, consumable: inout [[Any]], coin: inout Int, equipment: [EquipmentItem], material: inout[[Any]]) {
-    let equippedWeapon = equipment.first(where: { $0.type == "Hand" && $0.equipped })?.damage ?? 0
-    
     var choice=choice
     var enemy = ""
     if(choice == "f"){
@@ -213,9 +215,10 @@ func battleSequence(choice: String, maxhealth: inout Int, health: inout Int, man
                     [2] Meteor. Use 15pt of MP. Deal 50pt of damage.
                     [3] Shield. Use 10pt of MP. Block enemy's attack in 1 turn.
                     
-                    [4] Use consumable to heal or mana recovery.
-                    [5] Scan enemy's vital.
-                    [6] Flee from battle.
+                    [4] Heal yourself with potion.
+                    [5] Drink elixir to recover mana.
+                    [6] Scan enemy's vital.
+                    [7] Flee from battle.
                     
                     Your Choice?
                     """)
@@ -246,78 +249,60 @@ func battleSequence(choice: String, maxhealth: inout Int, health: inout Int, man
                     print("Not enough mana!")
                 }
             case "4":
-                while(choice == "4"){
-                    //Heal Or Mana Recovery Option
-                    print("""
-                    Choose consumable you want to consume:
-                    [H]eal your wounds with potion
-                    [D]rink elixir to recover your mana
-                    Or press [return] to go back
-                    """)
+                
+                while choice == "4" {
+                    
+                    let availablePotions = consumable.filter { $0[3] as? String == "Heal" && ($0[0] as? String == "Low Grade Potion" || $0[0] as? String == "Mid Grade Potion" || $0[0] as? String == "High Grade Potion") }
+                    print("Available Potions:")
+                    for i in 0..<availablePotions.count {
+                        print("[\(i+1)] \(availablePotions[i][0]) (\(availablePotions[i][1]) HP) (x\(availablePotions[i][2]))")
+                    }
+                    
+                    print("Choose a potion to use (or [return] to exit):", terminator: "")
                     choice = readLine()!.lowercased()
-                    if( choice == ""){
-                        choice="out"
-                    }else if(choice == "h"){
-                        //Heal
-                        while choice == "h" {
-                            
-                            let availablePotions = consumable.filter { $0[3] as? String == "Heal" && ($0[0] as? String == "Low Grade Potion" || $0[0] as? String == "Mid Grade Potion" || $0[0] as? String == "High Grade Potion") }
-                            print("Available Potions:")
-                            for i in 0..<availablePotions.count {
-                                print("\(i+1). \(availablePotions[i][0]) (\(availablePotions[i][1]) HP) (x\(availablePotions[i][2])")
-                            }
-                            
-                            print("Choose a potion to use (or [return] to exit):", terminator: "")
-                            choice = readLine()!.lowercased()
-                            
-                            if let potionIndex = Int(choice), potionIndex > 0 && potionIndex <= availablePotions.count {
-                                let potion = availablePotions[potionIndex - 1]
-                                health = usePotion(potion: potion, health: health, maxHealth: maxhealth, consumable: &consumable)
-                            }
-                            if choice == "" {
-                                choice = "4"
-                            }
-                            else{
-                                choice="h"
-                            }
-                        }
-                    }else if(choice == "d"){
-                        //Mana Recovery
-                        while choice == "d" {
-                            
-                            let availableElixirs = consumable.filter { $0[3] as? String == "Mana Restore" && ($0[0] as? String == "Low Grade Elixir" || $0[0] as? String == "Mid Grade Elixir" || $0[0] as? String == "High Grade Elixir") }
-                            print("Available Elixirs:")
-                            for i in 0..<availableElixirs.count {
-                                print("\(i+1). \(availableElixirs[i][0]) (\(availableElixirs[i][1]) MP) (x\(availableElixirs[i][2]))")
-                            }
-                            
-                            
-                            print("Choose an elixir to use (or [return] to exit):", terminator: "")
-                            choice = readLine()!.lowercased()
-                            if let elixirIndex = Int(choice), elixirIndex > 0 && elixirIndex <= availableElixirs.count {
-                                let elixir = availableElixirs[elixirIndex - 1]
-                                mana = useElixir(elixir: elixir, mana: mana, maxMana: maxmana, consumable: &consumable)
-                            }
-                            if choice == "" {
-                                choice = "4"
-                            }
-                            else{
-                                choice = "d"
-                            }
-                            
-                        }
-                        
-                    }else{
+                    
+                    if let potionIndex = Int(choice), potionIndex > 0 && potionIndex <= availablePotions.count {
+                        let potion = availablePotions[potionIndex - 1]
+                        health = usePotion(potion: potion, health: health, maxHealth: maxhealth, consumable: &consumable)
+                    }
+                    if choice == "" {
+                        choice = "out"
+                    }
+                    else{
                         choice="4"
+                    }
+                }
+                
+            case "5":
+                //Mana Recovery
+                while choice == "5" {
+                    
+                    let availableElixirs = consumable.filter { $0[3] as? String == "Mana Restore" && ($0[0] as? String == "Low Grade Elixir" || $0[0] as? String == "Mid Grade Elixir" || $0[0] as? String == "High Grade Elixir") }
+                    print("Available Elixirs:")
+                    for i in 0..<availableElixirs.count {
+                        print("[\(i+1)] \(availableElixirs[i][0]) (\(availableElixirs[i][1]) MP) (x\(availableElixirs[i][2]))")
+                    }
+                    
+                    
+                    print("Choose an elixir to use (or [return] to exit):", terminator: "")
+                    choice = readLine()!.lowercased()
+                    if let elixirIndex = Int(choice), elixirIndex > 0 && elixirIndex <= availableElixirs.count {
+                        let elixir = availableElixirs[elixirIndex - 1]
+                        mana = useElixir(elixir: elixir, mana: mana, maxMana: maxmana, consumable: &consumable)
+                    }
+                    if choice == "" {
+                        choice = "out"
+                    }
+                    else{
+                        choice = "5"
                     }
                     
                 }
                 
-                
-            case "5":
+            case "6":
                 //Vital Scan Feature (On Progress)
                 print("Error, you don't have the equipment!")
-            case "6":
+            case "7":
                 //Flee From The Battle
                 print("""
                         You feel that if you don't escape soon, you won't be able to continue the fight.
@@ -327,6 +312,7 @@ func battleSequence(choice: String, maxhealth: inout Int, health: inout Int, man
                         """)
                 return
             default:
+                print("Invalid Input (Input must be numerical and not outside of the option!)")
                 continue
             }
             
@@ -402,7 +388,7 @@ func battleSequence(choice: String, maxhealth: inout Int, health: inout Int, man
     }
     
 }
-//equiping Equipment
+//function for user equiping their equipment
 func toggleEquip(index: Int, equipment: inout [EquipmentItem]) {
     if index >= 0 && index < equipment.count {
         let selected = equipment[index]
@@ -460,7 +446,8 @@ while(relife == true){
         print("""
         From here, you can...
         [C]heck your health and stats
-        [U]se consumable
+        [H]eal yourself with potion
+        [D]rink elixir to recover mana
         [G]o to town (To be Updated)
         [I]nventory (Check your inventory)
         
@@ -468,7 +455,7 @@ while(relife == true){
         
         [F]orest of Troll
         [M]ountain of Golem
-        [Q]uit Game
+        [Q]uit Adventure
         
         Your choice?
         """)
@@ -479,73 +466,57 @@ while(relife == true){
                 choice = checkStats(username: username, health: health, maxhealth: maxhealth, mana: mana, maxmana: maxmana, consumable: consumable, choice: choice)
                 
             }
-        case "u":
-            //Option to heal or mana recovery
-            while(choice == "u"){
-                print("""
-                Choose consumable you want to consume:
-                [H]eal your wounds with potion
-                [D]rink elixir to recover your mana
-                Or press [return] to go back
-                """)
+        case "h":
+            //Heal
+            while choice == "h" {
+                
+                let availablePotions = consumable.filter { $0[3] as? String == "Heal" && ($0[0] as? String == "Low Grade Potion" || $0[0] as? String == "Mid Grade Potion" || $0[0] as? String == "High Grade Potion") }
+                print("Available Potions:")
+                for i in 0..<availablePotions.count {
+                    print("[\(i+1)] \(availablePotions[i][0]) (\(availablePotions[i][1]) HP) (x\(availablePotions[i][2]))")
+                }
+                
+                print("Choose a potion to use (or [return] to exit):", terminator: "")
                 choice = readLine()!.lowercased()
-                if( choice == ""){
-                    choice="out"
-                }else if(choice == "h"){
-                    //Heal
-                    while choice == "h" {
-                        
-                        let availablePotions = consumable.filter { $0[3] as? String == "Heal" && ($0[0] as? String == "Low Grade Potion" || $0[0] as? String == "Mid Grade Potion" || $0[0] as? String == "High Grade Potion") }
-                        print("Available Potions:")
-                        for i in 0..<availablePotions.count {
-                            print("\(i+1). \(availablePotions[i][0]) (\(availablePotions[i][1]) HP) (x\(availablePotions[i][2])")
-                        }
-                        
-                        print("Choose a potion to use (or [return] to exit):", terminator: "")
-                        choice = readLine()!.lowercased()
-                        
-                        
-                        if let potionIndex = Int(choice), potionIndex > 0 && potionIndex <= availablePotions.count {
-                            let potion = availablePotions[potionIndex - 1]
-                            health = usePotion(potion: potion, health: health, maxHealth: maxhealth, consumable: &consumable)
-                        }
-                        if choice == "" {
-                            choice = "u"
-                        }else{
-                            choice = "h"
-                        }
-                    }
-                }else if(choice == "d"){
-                    //Mana Recovery
-                    while choice == "d" {
-                        
-                        let availableElixirs = consumable.filter { $0[3] as? String == "Mana Restore" && ($0[0] as? String == "Low Grade Elixir" || $0[0] as? String == "Mid Grade Elixir" || $0[0] as? String == "High Grade Elixir") }
-                        print("Available Elixirs:")
-                        for i in 0..<availableElixirs.count {
-                            print("\(i+1). \(availableElixirs[i][0]) (\(availableElixirs[i][1]) MP) (x\(availableElixirs[i][2]))")
-                        }
-                        
-                        
-                        print("Choose an elixir to use (or [return] to exit):", terminator: "")
-                        choice = readLine()!.lowercased()
-                        if let elixirIndex = Int(choice), elixirIndex > 0 && elixirIndex <= availableElixirs.count {
-                            let elixir = availableElixirs[elixirIndex - 1]
-                            mana = useElixir(elixir: elixir, mana: mana, maxMana: maxmana, consumable: &consumable)
-                        }
-                        if choice == "" {
-                            choice = "u"
-                        }
-                        else{
-                            choice = "d"
-                        }
-                        
-                    }
-                    
+                
+                
+                if let potionIndex = Int(choice), potionIndex > 0 && potionIndex <= availablePotions.count {
+                    let potion = availablePotions[potionIndex - 1]
+                    health = usePotion(potion: potion, health: health, maxHealth: maxhealth, consumable: &consumable)
+                }
+                if choice == "" {
+                    choice = "out"
                 }else{
-                    choice="u"
+                    
+                    choice = "h"
+                }}
+            
+        case "d":
+            while choice == "d" {
+                
+                let availableElixirs = consumable.filter { $0[3] as? String == "Mana Restore" && ($0[0] as? String == "Low Grade Elixir" || $0[0] as? String == "Mid Grade Elixir" || $0[0] as? String == "High Grade Elixir") }
+                print("Available Elixirs:")
+                for i in 0..<availableElixirs.count {
+                    print("[\(i+1)] \(availableElixirs[i][0]) (\(availableElixirs[i][1]) MP) (x\(availableElixirs[i][2]))")
+                }
+                
+                
+                print("Choose an elixir to use (or [return] to exit):", terminator: "")
+                choice = readLine()!.lowercased()
+                if let elixirIndex = Int(choice), elixirIndex > 0 && elixirIndex <= availableElixirs.count {
+                    let elixir = availableElixirs[elixirIndex - 1]
+                    mana = useElixir(elixir: elixir, mana: mana, maxMana: maxmana, consumable: &consumable)
+                }
+                if choice == "" {
+                    choice = "out"
+                }
+                else{
+                    choice = "d"
                 }
                 
             }
+            
+            
             
         case "g":
             //Town Feature To Buy And Sell Things In The Inventory
@@ -556,6 +527,8 @@ while(relife == true){
                     choice="out"
                 }else{
                     choice="g"
+                    print("Please input [return] if you want to go back!")
+                    print("")
                 }
             }
         case "i":
@@ -599,10 +572,13 @@ while(relife == true){
                             } else {
                                 
                                 print("Invalid index")
+                                
                             }
                             choice="e"
                         }
                         else{
+                            print("Please choose the right number option!")
+                            print("")
                             choice="e"
                         }
                         
@@ -631,6 +607,8 @@ while(relife == true){
                     choice="out"
                 }else{
                     choice="i"
+                    print("Please choose the right input from the option!")
+                    print("")
                 }
                 
             }
@@ -652,9 +630,9 @@ while(relife == true){
             }
             
         case "q":
-            //Quit game
+            //Quit adventure
             while(choice == "q"){
-                print("Are you sure you want to quit, adventurer \(username)?")
+                print("Are you sure you want to quit, adventurer \(username)?(Y/N)(You will quit this adventure and can restart again.)")
                 choice = readLine()!.lowercased()
                 if(choice == "yes"  || choice == "ye" || choice == "y" || choice == "ya" || choice == "iya"){
                     print("Thank you for your adventure, adventurer \(username)!")
@@ -665,16 +643,19 @@ while(relife == true){
                 else if(choice == "n" || choice == "no" || choice=="tidak" || choice == "tak" || choice == "g" || choice == "ga" || choice == "gk" || choice == "gak"){
                     choice="out"
                 }else{
+                    print("Please input Y for yes or N for no!")
                     print("Invalid Answer")
                     choice = "q"
                 }
             }
         default:
             print("Input Invalid")
+            print("Please input the valid answer that is in the option list!")
+            print("")
         }
     }
     while(end==true){
-        print("Do you want to reincarnate and fix your path ?")
+        print("Do you want to reincarnate and fix your path ?(Y/N)(You will quit this game if you say no)")
         choice = readLine()!
         
         if(choice == "yes"  || choice == "ye" || choice == "y" || choice == "ya" || choice == "iya"){
@@ -691,6 +672,7 @@ while(relife == true){
             print("May your soul rest in peace")
         }else{
             print("Invalid Answer")
+            print("Please input Y for yes or N for no!")
             choice = "q"
         }
     }
