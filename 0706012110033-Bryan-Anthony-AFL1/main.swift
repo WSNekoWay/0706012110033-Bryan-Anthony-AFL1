@@ -8,14 +8,35 @@
 import Foundation
 
 //struct
-//Equipment Array Struct
-struct EquipmentItem: Equatable {
+//Implementation of protocol Item and structs as parent and child (Inheritance)
+protocol Item {
+    var name: String { get }
+    var owned: Int { get set }
+    var price: Int { get }
+}
+
+struct EquipmentItem: Equatable, Item {
     let name: String
     let type: String
     let damage: Int
     let price: Int
     var owned: Int
     var equipped: Bool
+}
+
+struct MaterialItem: Equatable, Item {
+    let name: String
+    var owned: Int
+    let price: Int
+}
+
+struct ConsumableItem: Equatable, Item {
+    let name: String
+    let type: String
+    let effect: String
+    let value: Int
+    var owned: Int
+    let price: Int
 }
 
 //let
@@ -66,7 +87,7 @@ func startGame(start: inout Bool, username: inout String, predicate: NSPredicate
 }
 
 //function for user to check their stats
-func checkStats(username: String, health: Int, maxhealth: Int, mana: Int, maxmana: Int, consumable: [[Any]], choice: String) -> String {
+func checkStats(username: String, health: Int, maxhealth: Int, mana: Int, maxmana: Int, choice: String) -> String {
     print("""
         Player name: \(username)
         
@@ -92,93 +113,95 @@ func checkStats(username: String, health: Int, maxhealth: Int, mana: Int, maxman
 }
 
 //function for use to heal him/herself using potion he/she choose
-func usePotion(potion: [Any], health: Int, maxHealth: Int, consumable: inout [[Any]]) -> Int {
+func usePotion(potion: ConsumableItem, health: Int, maxHealth: Int, consumable: inout [ConsumableItem]) -> Int {
     var newHealth = health
+    var quantity = potion.owned
     
-    guard let potionIndex = consumable.firstIndex(where: { ($0[0] as? String) == (potion[0] as? String) }) else {
-        print("You don't have any \(potion[0]) left. Goodluck and be careful in your journey!")
+    guard let potionIndex = consumable.firstIndex(where: { $0.name == potion.name }), quantity > 0 else {
+        print("You don't have any \(potion.name) left. Good luck and be careful in your journey!")
         return newHealth
     }
     
-    guard var quantity = potion[2] as? Int, quantity > 0 else {
-        print("You don't have any \(potion[0]) left. Goodluck and be careful in your journey!")
-        return newHealth
-    }
+    var updatedConsumable = consumable
+    updatedConsumable[potionIndex].owned = quantity - 1
     
     repeat {
         print("""
             Your HP is \(newHealth)
-            You have \(quantity) Potions (\(potion[0]))
+            You have \(quantity) Potions (\(potion.name))
             
             Are you sure you want to use 1 potion to heal your wounds? [Y/N]
             """)
         guard let choice = readLine()?.lowercased() else { continue }
         
         if choice == "y" {
-            let heal = potion[1] as? Int ?? 0
+            let heal = potion.value
             newHealth = min(newHealth + heal, maxHealth)
             print("You have been healed. Your new HP is \(newHealth).")
-            quantity -= 1
-            consumable[potionIndex][2] = quantity as Any
-            if quantity == 0 {
-                print("You have used up all your \(potion[0]) potions.")
-                break
+            if quantity == 1 {
+                print("You have used up all your \(potion.name) potions.")
+                updatedConsumable.remove(at: potionIndex)
             }
+            break
         } else if choice == "n" {
             break
         }
     } while true
     
+    consumable = updatedConsumable
     return newHealth
 }
 
+
+
+
 //function for user to use elixir to recover mana with elixir that user choose
-func useElixir(elixir: [Any], mana: Int, maxMana: Int, consumable: inout [[Any]]) -> Int {
+func useElixir(elixir: ConsumableItem, mana: Int, maxMana: Int, consumable: inout [ConsumableItem]) -> Int {
     var newMana = mana
+    var quantity = elixir.owned
     
-    guard let elixirIndex = consumable.firstIndex(where: { ($0[0] as? String) == (elixir[0] as? String) }) else {
-        print("You don't have any \(elixir[0]) left. Goodluck and be careful in your journey!")
+    guard let elixirIndex = consumable.firstIndex(where: { $0.name == elixir.name }), quantity > 0 else {
+        print("You don't have any \(elixir.name) left. Good luck and be careful in your journey!")
         return newMana
     }
     
-    guard var quantity = elixir[2] as? Int, quantity > 0 else {
-        print("You don't have any \(elixir[0]) left. Goodluck and be careful in your journey!")
-        return newMana
-    }
+    var updatedConsumable = consumable
+    updatedConsumable[elixirIndex].owned = quantity - 1
     
     repeat {
         print("""
             Your MP is \(newMana)
-            You have \(quantity) Elixirs (\(elixir[0]))
+            You have \(quantity) Elixirs (\(elixir.name))
             
             Are you sure you want to use 1 elixir to restore your mana? [Y/N]
             """)
         guard let choice = readLine()?.lowercased() else { continue }
         
         if choice == "y" {
-            let manaRestore = elixir[1] as? Int ?? 0
+            let manaRestore = elixir.value
             newMana = min(newMana + manaRestore, maxMana)
             print("Your mana has been restored. Your new MP is \(newMana).")
-            quantity -= 1
-            consumable[elixirIndex][2] = quantity as Any
-            if quantity == 0 {
-                print("You have used up all your \(elixir[0]) elixirs.")
-                break
+            if quantity == 1 {
+                print("You have used up all your \(elixir.name) elixirs.")
+                updatedConsumable.remove(at: elixirIndex)
             }
+            break
         } else if choice == "n" {
             break
         }
     } while true
     
+    consumable = updatedConsumable
     return newMana
 }
 
 
 
 //function for user to battle with monster based on the ecosystem they choose
-func battleSequence(choice: String, maxhealth: inout Int, health: inout Int, mana: inout Int, maxmana: inout Int, consumable: inout [[Any]], coin: inout Int, equipment: [EquipmentItem], material: inout[[Any]]) {
+func battleSequence(choice: String, maxhealth: inout Int, health: inout Int, mana: inout Int, maxmana: inout Int, consumable: inout [ConsumableItem], coin: inout Int, equipment: [EquipmentItem], material: inout[MaterialItem]) {
     var choice=choice
     var enemy = ""
+    var doubledamage=false
     if(choice == "f"){
         enemy="Troll"
         print("""
@@ -204,9 +227,28 @@ func battleSequence(choice: String, maxhealth: inout Int, health: inout Int, man
     }
     let baseDamage = 5
     let totalDamage = baseDamage + totalEquipmentDamage
-    while enemyHealth > 0 && health > 0 && choice != "6"{
+    while enemyHealth > 0 && health > 0 && choice != "7"{
         if turn == "player" {
-            print("""
+            if doubledamage==true{
+                print("""
+                    😈 Name : \(enemy)
+                    😈 Health: \(enemyHealth)
+                    
+                    Choose your action:
+                    [1] Physical Attack. No mana required. Deal \(baseDamage*2)pt of damage + \(totalEquipmentDamage*2)pt from equipment you equip.
+                    [2] Meteor. Use 15pt of MP. Deal 100pt of damage.
+                    [3] Shield. Use 10pt of MP. Block enemy's attack in 1 turn.
+                    
+                    [4] Heal yourself with potion.
+                    [5] Drink elixir to recover mana.
+                    [6] Scan enemy's vital.
+                    [7] Flee from battle.
+                    
+                    Your Choice?
+                    """)
+                
+            }else{
+                print("""
                     😈 Name : \(enemy)
                     😈 Health: \(enemyHealth)
                     
@@ -222,18 +264,28 @@ func battleSequence(choice: String, maxhealth: inout Int, health: inout Int, man
                     
                     Your Choice?
                     """)
-            
+            }
             choice = readLine()!
             
             switch choice {
             case "1":
                 //Use Physical Attack to damage enemy with addition of equipment
-                enemyHealth -= totalDamage
-                print("You dealt \(totalDamage)pt of damage to \(enemy)!")
+                var totaldamage = totalDamage
+                if doubledamage==true{
+                    totaldamage=totalDamage*2
+                }
+                
+                enemyHealth -= totaldamage
+                print("You dealt \(totaldamage)pt of damage to \(enemy)!")
             case "2":
                 //Use Meteor Skill to damage enemy
                 if mana >= 15 {
-                    enemyHealth -= 50
+                    if doubledamage==true{
+                        enemyHealth -= 100
+                    }else{
+                        enemyHealth -= 50
+                    }
+                    
                     mana -= 15
                     print("You used Meteor and dealt 50pt of damage to \(enemy)!")
                 } else {
@@ -251,11 +303,11 @@ func battleSequence(choice: String, maxhealth: inout Int, health: inout Int, man
             case "4":
                 
                 while choice == "4" {
+                    let availablePotions = consumable.filter { $0.type == "Heal" && ["Low Grade Potion", "Mid Grade Potion", "High Grade Potion"].contains($0.name) }
                     
-                    let availablePotions = consumable.filter { $0[3] as? String == "Heal" && ($0[0] as? String == "Low Grade Potion" || $0[0] as? String == "Mid Grade Potion" || $0[0] as? String == "High Grade Potion") }
                     print("Available Potions:")
-                    for i in 0..<availablePotions.count {
-                        print("[\(i+1)] \(availablePotions[i][0]) (\(availablePotions[i][1]) HP) (x\(availablePotions[i][2]))")
+                    for (index, potion) in availablePotions.enumerated() {
+                        print("[\(index + 1)] \(potion.name) (\(potion.value) HP) (x\(potion.owned))")
                     }
                     
                     print("Choose a potion to use (or [return] to exit):", terminator: "")
@@ -265,43 +317,49 @@ func battleSequence(choice: String, maxhealth: inout Int, health: inout Int, man
                         let potion = availablePotions[potionIndex - 1]
                         health = usePotion(potion: potion, health: health, maxHealth: maxhealth, consumable: &consumable)
                     }
+                    
                     if choice == "" {
                         choice = "out"
-                    }
-                    else{
-                        choice="4"
+                    } else {
+                        choice = "4"
                     }
                 }
                 
             case "5":
                 //Mana Recovery
                 while choice == "5" {
-                    
-                    let availableElixirs = consumable.filter { $0[3] as? String == "Mana Restore" && ($0[0] as? String == "Low Grade Elixir" || $0[0] as? String == "Mid Grade Elixir" || $0[0] as? String == "High Grade Elixir") }
+                                
+                    let availableElixirs = consumable.filter { $0.type == "Mana Restore" && ["Low Grade Elixir", "Mid Grade Elixir", "High Grade Elixir"].contains($0.name) }
+
                     print("Available Elixirs:")
-                    for i in 0..<availableElixirs.count {
-                        print("[\(i+1)] \(availableElixirs[i][0]) (\(availableElixirs[i][1]) MP) (x\(availableElixirs[i][2]))")
+                    for (index, elixir) in availableElixirs.enumerated() {
+                        print("[\(index + 1)] \(elixir.name) (\(elixir.value) MP) (x\(elixir.owned))")
                     }
-                    
-                    
+
+                                
                     print("Choose an elixir to use (or [return] to exit):", terminator: "")
-                    choice = readLine()!.lowercased()
+                    guard let input = readLine()?.lowercased(), !input.isEmpty else {
+                        choice = "out"
+                        continue
+                    }
+                    choice = input
+                                
                     if let elixirIndex = Int(choice), elixirIndex > 0 && elixirIndex <= availableElixirs.count {
                         let elixir = availableElixirs[elixirIndex - 1]
                         mana = useElixir(elixir: elixir, mana: mana, maxMana: maxmana, consumable: &consumable)
                     }
                     if choice == "" {
                         choice = "out"
-                    }
-                    else{
+                    } else {
                         choice = "5"
                     }
-                    
                 }
                 
             case "6":
                 //Vital Scan Feature (On Progress)
-                print("Error, you don't have the equipment!")
+                print("You found enemy weakness! Your damage to enemy will be more effective 100 percent!")
+                doubledamage=true
+                
             case "7":
                 //Flee From The Battle
                 print("""
@@ -322,37 +380,27 @@ func battleSequence(choice: String, maxhealth: inout Int, health: inout Int, man
                 let randomCoin = Int.random(in: 1...100)
                 coin+=randomCoin
                 if enemy == "Troll" {
-                    var material1 = material[0][1] as? Int ?? 0
-                    material1 = material1 + 1
-                    material[0][1] = material1 as Any
-                    var material2 = material[1][1] as? Int ?? 0
-                    material2 = material2 + 1
-                    material[1][1] = material2 as Any
-                    var material3 = material[2][1] as? Int ?? 0
-                    material3 = material3 + 1
-                    material[2][1] = material3 as Any
+                    material[0].owned += 1
+                    material[1].owned += 1
+                    material[2].owned += 1
                     
                     print("You have obtained the following items:")
-                    print("\(material[0][0]) x\(material1)")
-                    print("\(material[1][0]) x\(material2)")
-                    print("\(material[2][0]) x\(material3)")
-                    
-                    
+                    print("\(material[0].name) x\(material[0].owned)")
+                    print("\(material[1].name) x\(material[1].owned)")
+                    print("\(material[2].name) x\(material[2].owned)")
                 } else if enemy == "Golem" {
-                    var material1 = material[3][1] as? Int ?? 0
-                    material1 = material1 + 1
-                    material[3][1] = material1 as Any
-                    var material2 = material[4][1] as? Int ?? 0
-                    material2 = material2 + 1
-                    material[4][1] = material2 as Any
-                    var material3 = material[5][1] as? Int ?? 0
-                    material3 = material3 + 10
-                    material[5][1] = material3 as Any
+                    material[3].owned += 1
+                    material[4].owned += 1
+                    material[5].owned += 10
+                    
                     print("You have obtained the following items:")
-                    print("\(material[3][0]) x\(material1)")
-                    print("\(material[4][0]) x\(material2)")
-                    print("\(material[5][0]) x\(material3)")
+                    print("\(material[3].name) x\(material[3].owned)")
+                    print("\(material[4].name) x\(material[4].owned)")
+                    print("\(material[5].name) x\(material[5].owned)")
                 }
+
+                
+
                 
                 return
             }
@@ -416,22 +464,37 @@ while(relife == true){
     username = ""
     
     //Array consumable
-    var consumable: [[Any]] = [["Low Grade Potion", 10, 0, "Heal"],["Mid Grade Potion", 20, 20, "Heal"], ["High Grade Potion", 40,0,"Heal"], ["Low Grade Elixir", 5, 20, "Mana Restore"],["Mid Grade Elixir", 10, 0, "Mana Restore"], ["High Grade Elixir", 20, 0, "Mana Restore"]]
+    var consumable: [ConsumableItem] = [
+        ConsumableItem(name: "Low Grade Potion", type: "Potion", effect: "Heal", value: 10, owned: 0, price: 0),
+        ConsumableItem(name: "Mid Grade Potion", type: "Potion", effect: "Heal", value: 20, owned: 20, price: 0),
+        ConsumableItem(name: "High Grade Potion", type: "Potion", effect: "Heal", value: 40, owned: 0, price: 0),
+        ConsumableItem(name: "Low Grade Elixir", type: "Elixir", effect: "Mana Restore", value: 5, owned: 20, price: 20),
+        ConsumableItem(name: "Mid Grade Elixir", type: "Elixir", effect: "Mana Restore", value: 10, owned: 0, price: 20),
+        ConsumableItem(name: "High Grade Elixir", type: "Elixir", effect: "Mana Restore", value: 20, owned: 0, price: 0)
+    ]
+
     
     //Array material
-    var material: [[Any]] = [["Troll Claw",1,2],["Troll Rusty Dagger",0,5],["Troll Staff",0,10],["Golem Core",0,20],["Adamontium Stone",0,50],["Ordinary Rock",0,1]]
+    var material: [MaterialItem] = [
+        MaterialItem(name: "Troll Claw", owned: 1, price: 2),
+        MaterialItem(name: "Troll Rusty Dagger", owned: 0, price: 5),
+        MaterialItem(name: "Troll Staff", owned: 0, price: 10),
+        MaterialItem(name: "Golem Core", owned: 0, price: 20),
+        MaterialItem(name: "Adamontium Stone", owned: 0, price: 50),
+        MaterialItem(name: "Ordinary Rock", owned: 0, price: 1)
+    ]
     
     //Array equipment
     var equipment: [EquipmentItem] = [
         EquipmentItem(name: "Old Rusty Sword", type: "Hand", damage: 15, price: 10, owned: 1, equipped: true),
-        EquipmentItem(name: "Newbie Luck", type: "Accessory", damage: 500, price: 0, owned: 1, equipped: true),
+        EquipmentItem(name: "Newbie Luck", type: "Accessory", damage: 300, price: 0, owned: 1, equipped: true),
         EquipmentItem(name: "Mask of Madness", type: "Head", damage: 100, price: 50, owned: 1, equipped: true),
         EquipmentItem(name: "Zeus Lightning", type: "Hand", damage: 300, price: 500, owned: 0, equipped: false),
-        EquipmentItem(name: "Hades Armor", type: "Armor", damage: 200, price: 400, owned: 1, equipped: false),
-        EquipmentItem(name: "King's Sword Legacy", type: "Hand", damage: 100, price: 150, owned: 1, equipped: false),
-        EquipmentItem(name: "Zephyr Boots", type: "Boots", damage: 250, price: 500, owned: 1, equipped: false),
-        EquipmentItem(name: "Peasant Armor", type: "Armor", damage: 50, price: 20, owned: 1, equipped: false),
-        EquipmentItem(name: "Knight Boots", type: "Boots", damage: 100, price: 40, owned: 1, equipped: false),
+        EquipmentItem(name: "Hades Armor", type: "Armor", damage: 200, price: 400, owned: 0, equipped: false),
+        EquipmentItem(name: "King's Sword Legacy", type: "Hand", damage: 100, price: 150, owned: 0, equipped: false),
+        EquipmentItem(name: "Zephyr Boots", type: "Boots", damage: 250, price: 500, owned: 0, equipped: false),
+        EquipmentItem(name: "Peasant Armor", type: "Armor", damage: 50, price: 20, owned: 0, equipped: false),
+        EquipmentItem(name: "Knight Boots", type: "Boots", damage: 100, price: 40, owned: 0, equipped: false),
     ]
     var health=50
     var mana=50
@@ -463,57 +526,61 @@ while(relife == true){
         switch choice{
         case "c":
             while(choice=="c"){
-                choice = checkStats(username: username, health: health, maxhealth: maxhealth, mana: mana, maxmana: maxmana, consumable: consumable, choice: choice)
+                choice = checkStats(username: username, health: health, maxhealth: maxhealth, mana: mana, maxmana: maxmana, choice: choice)
                 
             }
         case "h":
             //Heal
             while choice == "h" {
+                let availablePotions = consumable.filter { $0.type == "Heal" && ["Low Grade Potion", "Mid Grade Potion", "High Grade Potion"].contains($0.name) }
                 
-                let availablePotions = consumable.filter { $0[3] as? String == "Heal" && ($0[0] as? String == "Low Grade Potion" || $0[0] as? String == "Mid Grade Potion" || $0[0] as? String == "High Grade Potion") }
                 print("Available Potions:")
-                for i in 0..<availablePotions.count {
-                    print("[\(i+1)] \(availablePotions[i][0]) (\(availablePotions[i][1]) HP) (x\(availablePotions[i][2]))")
+                for (index, potion) in availablePotions.enumerated() {
+                    print("[\(index + 1)] \(potion.name) (\(potion.value) HP) (x\(potion.owned))")
                 }
                 
                 print("Choose a potion to use (or [return] to exit):", terminator: "")
                 choice = readLine()!.lowercased()
                 
-                
                 if let potionIndex = Int(choice), potionIndex > 0 && potionIndex <= availablePotions.count {
                     let potion = availablePotions[potionIndex - 1]
                     health = usePotion(potion: potion, health: health, maxHealth: maxhealth, consumable: &consumable)
                 }
+                
                 if choice == "" {
                     choice = "out"
-                }else{
-                    
+                } else {
                     choice = "h"
-                }}
+                }
+            }
             
         case "d":
             while choice == "d" {
-                
-                let availableElixirs = consumable.filter { $0[3] as? String == "Mana Restore" && ($0[0] as? String == "Low Grade Elixir" || $0[0] as? String == "Mid Grade Elixir" || $0[0] as? String == "High Grade Elixir") }
+                            
+                let availableElixirs = consumable.filter { $0.type == "Mana Restore" && ["Low Grade Elixir", "Mid Grade Elixir", "High Grade Elixir"].contains($0.name) }
+
                 print("Available Elixirs:")
-                for i in 0..<availableElixirs.count {
-                    print("[\(i+1)] \(availableElixirs[i][0]) (\(availableElixirs[i][1]) MP) (x\(availableElixirs[i][2]))")
+                for (index, elixir) in availableElixirs.enumerated() {
+                    print("[\(index + 1)] \(elixir.name) (\(elixir.value) MP) (x\(elixir.owned))")
                 }
-                
-                
+
+                            
                 print("Choose an elixir to use (or [return] to exit):", terminator: "")
-                choice = readLine()!.lowercased()
+                guard let input = readLine()?.lowercased(), !input.isEmpty else {
+                    choice = "out"
+                    continue
+                }
+                choice = input
+                            
                 if let elixirIndex = Int(choice), elixirIndex > 0 && elixirIndex <= availableElixirs.count {
                     let elixir = availableElixirs[elixirIndex - 1]
                     mana = useElixir(elixir: elixir, mana: mana, maxMana: maxmana, consumable: &consumable)
                 }
                 if choice == "" {
                     choice = "out"
+                } else {
+                    choice = "h"
                 }
-                else{
-                    choice = "d"
-                }
-                
             }
             
             
@@ -585,24 +652,31 @@ while(relife == true){
                         
                     }
                 }else if(choice=="m"){
+                    print("Your Material List:")
                     for item in material {
-                        print("""
-                              \(item[0]):
-                              Quantity:  \(item[1])
-                              Value: \(item[2])
-                              """)
+                        print("\(item.name):")
+                        print("\tQuantity: \(item.owned)")
+                        print("\tPrice: \(item.price)")
                         print("")
                     }
                     choice="i"
-                }else if(choice=="c"){
-                    for item in consumable {
-                        print("\(item[0]):")
-                        print("\tQuantity: \(item[2])")
-                        print("\tEffect: \(item[3])")
-                        print("\tEffect Value: \(item[1])")
-                        print("")
+                } else if (choice == "c") {
+                    let availablePotions = consumable.filter { $0.type == "Heal" && ["Low Grade Potion", "Mid Grade Potion", "High Grade Potion"].contains($0.name) }
+                    let availableElixirs = consumable.filter { $0.type == "Elixir" && ["Low Grade Elixir", "Mid Grade Elixir", "High Grade Elixir"].contains($0.name) }
+                                
+                    print("Available Potions:")
+                    for (index, potion) in availablePotions.enumerated() {
+                        print("[\(index + 1)] \(potion.name) (\(potion.value) HP) (x\(potion.owned))")
                     }
-                    choice="i"
+                                
+                    print("Available Elixirs:")
+                    for (index, elixir) in availableElixirs.enumerated() {
+                        print("[\(index + 1)] \(elixir.name) (\(elixir.value) MP) (x\(elixir.owned))")
+                    }
+                                
+                    print("Press [return] to go back")
+                    choice = readLine()!.lowercased()
+                    choice = "i"
                 }else if(choice=="b"){
                     choice="out"
                 }else{
@@ -614,16 +688,18 @@ while(relife == true){
             }
         case "f":
             //Battle with a troll
-            battleSequence(choice: choice, maxhealth: &maxhealth, health: &health, mana: &mana,maxmana:&maxmana,consumable: &consumable, coin: &coin, equipment: equipment, material: &material)
+            battleSequence(choice: choice, maxhealth: &maxhealth, health: &health, mana: &mana, maxmana: &maxmana, consumable: &consumable, coin: &coin, equipment: equipment, material: &material)
+
             
-            if(health<=0){
-                print("Oh dear you are dead")
-                end=true
+            if health <= 0 {
+                print("Oh dear, you are dead.")
+                end = true
             }
-            
+
         case "m":
             //Battle with a golem
-            battleSequence(choice: choice, maxhealth: &maxhealth, health: &health, mana: &mana,maxmana:&maxmana,consumable: &consumable, coin: &coin, equipment: equipment,material: &material)
+            battleSequence(choice: choice, maxhealth: &maxhealth, health: &health, mana: &mana, maxmana: &maxmana, consumable: &consumable, coin: &coin, equipment: equipment, material: &material)
+
             if(health<=0){
                 print("Oh dear you are dead")
                 end=true
