@@ -38,7 +38,7 @@ func usePotion(potion: ConsumableItem, health: Int, maxHealth: Int, consumable: 
     }
     
     var updatedConsumable = consumable
-    updatedConsumable[potionIndex].owned = quantity - 1
+    
     
     repeat {
         print("""
@@ -51,8 +51,13 @@ func usePotion(potion: ConsumableItem, health: Int, maxHealth: Int, consumable: 
         
         if choice == "y" {
             let heal = potion.value
+            updatedConsumable[potionIndex].owned = quantity - 1
             newHealth = min(newHealth + heal, maxHealth)
+            if newHealth>maxHealth{
+                newHealth=maxHealth
+            }
             print("You have been healed. Your new HP is \(newHealth).")
+            
             if quantity == 1 {
                 print("You have used up all your \(potion.name) potions.")
                 
@@ -81,7 +86,7 @@ func useElixir(elixir: ConsumableItem, mana: Int, maxMana: Int, consumable: inou
     }
     
     var updatedConsumable = consumable
-    updatedConsumable[elixirIndex].owned = quantity - 1
+    
     
     repeat {
         print("""
@@ -94,7 +99,12 @@ func useElixir(elixir: ConsumableItem, mana: Int, maxMana: Int, consumable: inou
         
         if choice == "y" {
             let manaRestore = elixir.value
+            updatedConsumable[elixirIndex].owned = quantity - 1
             newMana = min(newMana + manaRestore, maxMana)
+            if newMana>maxMana{
+                newMana=maxMana
+            }
+            
             print("Your mana has been restored. Your new MP is \(newMana).")
             if quantity == 1 {
                 print("You have used up all your \(elixir.name) elixirs.")

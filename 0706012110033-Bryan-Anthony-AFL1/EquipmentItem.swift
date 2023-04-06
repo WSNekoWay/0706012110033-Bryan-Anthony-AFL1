@@ -56,7 +56,10 @@ func sellEquipment(index: Int, player: inout Player, equipment: inout [Equipment
         player.coin += salePrice
         
         equipment[index].owned -= 1
-        equipment[index].equipped = false
+        if equipment[index].owned == 0{
+            equipment[index].equipped = false
+        }
+        
        
         print("You have successfully sold the \(equipment[index].name) for \(salePrice) coins.")
     } else {

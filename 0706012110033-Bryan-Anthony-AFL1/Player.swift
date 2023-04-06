@@ -350,6 +350,7 @@ class Player: Character {
                 }
                 game.choice = "3"
             default:
+                game.choice = "3"
                 print("Invalid option.")
                 print("")
             }

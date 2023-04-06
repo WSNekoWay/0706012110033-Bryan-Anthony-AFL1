@@ -67,7 +67,7 @@ class RPGAdventure {
         [C]heck your health and stats
         [H]eal yourself with potion
         [D]rink elixir to recover mana
-        [G]o to town (To be Updated)
+        [G]o to town 
         [I]nventory (Check your inventory)
         
         ...or choose where you want to go
@@ -236,10 +236,10 @@ class RPGAdventure {
                         """)
                 }
                 
-                let choice = readLine()!
+                game.choice = readLine()!
                 
                 
-                switch choice {
+                switch game.choice {
                 case "1":
                     //Use Physical Attack to damage enemy with addition of equipment
                     var totaldamage = totalDamage
@@ -248,7 +248,7 @@ class RPGAdventure {
                     }
                     
                     enemy.health -= totaldamage
-                    print("You dealt \(totaldamage)pt of damage to \(enemy)!")
+                    print("You dealt \(totaldamage)pt of damage to \(enemy.name)!")
                 case "2":
                     //Use Meteor Skill to damage enemy
                     if player.mana >= 15 {
@@ -259,7 +259,7 @@ class RPGAdventure {
                         }
                         
                         player.mana -= 15
-                        print("You used Meteor and dealt 50pt of damage to \(enemy)!")
+                        print("You used Meteor and dealt 50pt of damage to \(enemy.name)!")
                     } else {
                         print("Not enough mana!")
                     }
@@ -273,12 +273,12 @@ class RPGAdventure {
                         print("Not enough mana!")
                     }
                 case "4":
-                    
-                    player.heal(menuOption: "4")
+                    //Heal
+                    player.heal(menuOption: game.choice)
                     
                 case "5":
                     //Mana Recovery
-                    player.manaRecovery(menuOption: "5")
+                    player.manaRecovery(menuOption: game.choice)
                     
                 case "6":
                     //Vital Scan Feature (On Progress)
@@ -338,7 +338,7 @@ class RPGAdventure {
                     block=false
                 }else{
                     print("""
-                        The \(enemy) attacks you!
+                        The \(enemy.name) attacks you!
                         """)
                     
                     enemy.dealDamage(to: &player)

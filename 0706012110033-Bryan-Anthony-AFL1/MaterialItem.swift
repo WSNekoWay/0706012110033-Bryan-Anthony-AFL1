@@ -24,23 +24,6 @@ var materials: [MaterialItem] = [
     MaterialItem(name: "Ordinary Rock", owned: 0, price: 1)
 ]
 
-
-//buyMaterial
-func buyMaterial(index: Int, materials: inout [MaterialItem],coins : inout Int) {
-    guard index < materials.count else {
-        print("Invalid index")
-        return
-    }
-    
-    let item = materials[index]
-    if coins >= item.price {
-        coins -= item.price
-        materials[index].owned += 1
-        print("You have purchased a \(item.name)")
-    } else {
-        print("You don't have enough gold to buy this material.")
-    }
-}
 //sell material
 func sellMaterial(index: Int, materials: inout [MaterialItem],coins : inout Int) {
     guard index < materials.count else {
