@@ -15,7 +15,6 @@
 		043CEFBD29DBE6F500CA2FF7 /* Character.swift in Sources */ = {isa = PBXBuildFile; fileRef = 043CEFBC29DBE6F500CA2FF7 /* Character.swift */; };
 		043CEFBF29DBE75D00CA2FF7 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 043CEFBE29DBE75D00CA2FF7 /* Player.swift */; };
 		043CEFC129DBE7C400CA2FF7 /* Battle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 043CEFC029DBE7C400CA2FF7 /* Battle.swift */; };
-		043CEFC329DE696800CA2FF7 /* TownFeatures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 043CEFC229DE696800CA2FF7 /* TownFeatures.swift */; };
 		0443B49B29B19FC70078ADDC /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0443B49A29B19FC70078ADDC /* main.swift */; };
 /* End PBXBuildFile section */
 
@@ -40,7 +39,6 @@
 		043CEFBC29DBE6F500CA2FF7 /* Character.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Character.swift; sourceTree = "<group>"; };
 		043CEFBE29DBE75D00CA2FF7 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		043CEFC029DBE7C400CA2FF7 /* Battle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Battle.swift; sourceTree = "<group>"; };
-		043CEFC229DE696800CA2FF7 /* TownFeatures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TownFeatures.swift; sourceTree = "<group>"; };
 		0443B49729B19FC70078ADDC /* 0706012110033-Bryan-Anthony-AFL1 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "0706012110033-Bryan-Anthony-AFL1"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0443B49A29B19FC70078ADDC /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -84,7 +82,6 @@
 				043CEFBC29DBE6F500CA2FF7 /* Character.swift */,
 				043CEFBE29DBE75D00CA2FF7 /* Player.swift */,
 				043CEFC029DBE7C400CA2FF7 /* Battle.swift */,
-				043CEFC229DE696800CA2FF7 /* TownFeatures.swift */,
 			);
 			path = "0706012110033-Bryan-Anthony-AFL1";
 			sourceTree = "<group>";
@@ -151,7 +148,6 @@
 				043CEFB929DBE4B600CA2FF7 /* EquipmentItem.swift in Sources */,
 				043CEFBD29DBE6F500CA2FF7 /* Character.swift in Sources */,
 				043CEFBB29DBE6E800CA2FF7 /* Enemy.swift in Sources */,
-				043CEFC329DE696800CA2FF7 /* TownFeatures.swift in Sources */,
 				043CEFBF29DBE75D00CA2FF7 /* Player.swift in Sources */,
 				043CEFB529DBE36800CA2FF7 /* ConsumableItem.swift in Sources */,
 				0443B49B29B19FC70078ADDC /* main.swift in Sources */,

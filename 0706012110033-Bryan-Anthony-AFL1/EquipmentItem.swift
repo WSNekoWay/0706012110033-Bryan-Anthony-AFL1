@@ -48,12 +48,12 @@ func buyEquipment(index: Int, player: inout Player, equipment: inout [EquipmentI
 }
 
 //sell equipment in blacksmith function
-func sellEquipment(index: Int, coins: inout Int, equipment: inout [EquipmentItem]) {
+func sellEquipment(index: Int, player: inout Player, equipment: inout [EquipmentItem]) {
     
     if equipment[index].owned > 0 {
         
         let salePrice = equipment[index].price
-        coins += salePrice
+        player.coin += salePrice
         
         equipment[index].owned -= 1
         equipment[index].equipped = false

@@ -178,19 +178,9 @@ func battleSequence(choice: String, player: inout Player) {
                     The \(enemy) attacks you!
                     """)
                 
-                if Int.random(in: 0...1) == 0 {
-                    print("You dodge the attack!")
-                    
-                } else {
-                    // Enemy deals damage to player
-                    let damage = Int.random(in: 10...20)
-                    player.health -= damage
-                    print("""
-                      The \(enemy) deals \(damage)pt of damage to you!
-                      Your HP = \(player.health)/\(player.maxHealth)
-                      """)
-                    
-                }}
+                enemy.dealDamage(to: &player)
+                
+            }
             
             turn = "player"
         }
