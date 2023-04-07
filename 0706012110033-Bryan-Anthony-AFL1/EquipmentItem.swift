@@ -83,6 +83,11 @@ func toggleEquip(index: Int, equipment: inout [EquipmentItem]) {
                 let equippedIndex = equipment.firstIndex(of: equipped[0])!
                 equipment[equippedIndex].equipped = false
             }
+        }else{
+            print("Invalid input!")
         }
+    }
+    else{
+        print("Invalid input!")
     }
 }

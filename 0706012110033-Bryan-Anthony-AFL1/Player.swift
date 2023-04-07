@@ -71,6 +71,7 @@ class Player: Character {
             if game.choice == "" {
                 game.choice = "out"
             } else {
+                print("Invalid input!")
                 game.choice = menuOption
             }
         }
@@ -95,6 +96,7 @@ class Player: Character {
             if game.choice == "" {
                 game.choice = "out"
             } else {
+                print("Invalid input!")
                 game.choice = menuOption
             }
         }
